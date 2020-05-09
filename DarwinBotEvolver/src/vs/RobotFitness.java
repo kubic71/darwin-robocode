@@ -16,8 +16,8 @@ import java.util.Random;
 public class RobotFitness extends FitnessFunction implements IBattleListener {
     public static final String ROBOCODE_LOCATION = "/home/kubik/robocode";
 
-    private static final int BATTLEFIELD_WIDTH = 800;
-    private static final int BATTLEFIELD_HEIGHT = 600;
+    public static final int BATTLEFIELD_WIDTH = 800;
+    public static final int BATTLEFIELD_HEIGHT = 600;
 
     public final int randSeed = 42;
     public final Random rand = new Random(randSeed);
@@ -38,12 +38,28 @@ public class RobotFitness extends FitnessFunction implements IBattleListener {
         // Create the battlefield
         battleSpec = new BattlefieldSpecification(BATTLEFIELD_WIDTH, BATTLEFIELD_HEIGHT);
 
+        engine.addBattleListener(this);
         robotSpecs = engine.getLocalRepository("vs.SuperRamFire*,vs.ParameterizedSuperTracker*");
     }
 
 
     @Override
     protected double evaluate(IChromosome iChromosome) {
+
+        int N_ROUNDS = 4;
+        int MAX_POSSIBLE_SCORE = 1000;
+
+        double score = 0;
+        for(int i = 0; i < N_ROUNDS; i++) {
+            score += runOneRound(iChromosome);
+        }
+        score /= N_ROUNDS;
+
+//        return MAX_POSSIBLE_SCORE - score;
+        return  score;
+    }
+
+    private double runOneRound(IChromosome iChromosome) {
         try {
             saveChromosome(iChromosome);
         } catch (IOException e) {
@@ -52,7 +68,7 @@ public class RobotFitness extends FitnessFunction implements IBattleListener {
 
         // Setup battle parameters
         int numberOfRounds = 1;
-        long inactivityTime = 10000000;
+        long inactivityTime = 10000;
         double gunCoolingRate = 1.0;
         int sentryBorderSize = 50;
         boolean hideEnemyNames = false;
@@ -61,9 +77,9 @@ public class RobotFitness extends FitnessFunction implements IBattleListener {
         BattleSpecification battleSpec = new BattleSpecification(this.battleSpec, numberOfRounds, inactivityTime,
                 gunCoolingRate, sentryBorderSize, hideEnemyNames, robotSpecs, robotSetups);
 
+
         // Run our specified battle and let it run till it is over
         engine.runBattle(battleSpec, true); // waits till the battle finishes
-
         return lastResult;
     }
 
@@ -71,6 +87,8 @@ public class RobotFitness extends FitnessFunction implements IBattleListener {
         // Cleanup our RobocodeEngine
         engine.close();
     }
+
+
 
 
     RobotSetup getRandomRobotSetup() {
@@ -103,10 +121,14 @@ public class RobotFitness extends FitnessFunction implements IBattleListener {
     @Override
     public void onBattleCompleted(BattleCompletedEvent battleCompletedEvent) {
         // we run only 1 round in each fitness evaluation
-        BattleResults res = battleCompletedEvent.getIndexedResults()[0];
+        for (BattleResults res : battleCompletedEvent.getIndexedResults()) {
+            if(res.getTeamLeaderName().equals("vs.ParameterizedSuperTracker*")) {
+                lastResult = res.getScore();
+                return;
+            }
+        }
 
-        lastResult = 42;
-
+        System.exit(1);
     }
 
     @Override

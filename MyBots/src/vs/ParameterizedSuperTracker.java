@@ -25,6 +25,10 @@ public class ParameterizedSuperTracker extends AdvancedRobot {
     public double speedRange = 12;
     public double minSpeed = 12;
 
+    // Number of colors evolved
+    public static final int EVOLVED_COLORS_NUM = 4;
+    public double[] colors = new double[EVOLVED_COLORS_NUM];
+
 
     public void loadParamsFromFile() throws IOException {
         File file = new File(PARAM_FILE);
@@ -33,6 +37,10 @@ public class ParameterizedSuperTracker extends AdvancedRobot {
         changeSpeedProb = Double.parseDouble(sc.nextLine());
         speedRange = Double.parseDouble(sc.nextLine());
         minSpeed = Double.parseDouble(sc.nextLine());
+
+        for (int i = 0; i < EVOLVED_COLORS_NUM; i++)
+            colors[i] = Double.parseDouble(sc.nextLine());
+
         sc.close();
     }
 
@@ -41,14 +49,19 @@ public class ParameterizedSuperTracker extends AdvancedRobot {
         loadParamsFromFile();
     }
 
+    public static Color ColorFromDouble(double d) {
+        return new Color(Color.HSBtoRGB((float) d, 1, 1));
+    }
 
     public void run() {
         setAdjustRadarForRobotTurn(true);//keep the radar still while we turn
-        setBodyColor(new Color(128, 128, 50));
-        setGunColor(new Color(50, 50, 20));
-        setRadarColor(new Color(200, 200, 70));
+
+        setBodyColor(ColorFromDouble(colors[0]));
+        setGunColor(ColorFromDouble(colors[1]));
+        setRadarColor(ColorFromDouble(colors[2]));
+        setBulletColor(ColorFromDouble(colors[3]));
         setScanColor(Color.white);
-        setBulletColor(Color.blue);
+
         setAdjustGunForRobotTurn(true); // Keep the gun still when we turn
         turnRadarRightRadians(Double.POSITIVE_INFINITY);//keep turning radar right
     }
