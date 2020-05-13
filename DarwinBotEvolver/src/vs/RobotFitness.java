@@ -5,7 +5,6 @@ import org.jgap.Gene;
 import org.jgap.IChromosome;
 import org.jgap.impl.DoubleGene;
 import robocode.BattleResults;
-import robocode.BattleRules;
 import robocode.control.*;
 import robocode.control.events.*;
 
@@ -14,13 +13,13 @@ import java.io.IOException;
 import java.util.Random;
 
 public class RobotFitness extends FitnessFunction implements IBattleListener {
-    public static final String ROBOCODE_LOCATION = "/home/kubik/robocode";
+    public static final String ROBOCODE_LOCATION = "D:\\robocode";
 
     public static final int BATTLEFIELD_WIDTH = 800;
     public static final int BATTLEFIELD_HEIGHT = 600;
 
     public final int randSeed = 42;
-    public final Random rand = new Random(randSeed);
+    public Random rand;
 
     RobocodeEngine engine;
     RobotSpecification[] robotSpecs;
@@ -33,8 +32,7 @@ public class RobotFitness extends FitnessFunction implements IBattleListener {
         engine = new RobocodeEngine(new java.io.File(ROBOCODE_LOCATION));
 
         // Show the Robocode battle view
-        engine.setVisible(true);
-
+        engine.setVisible(false);
         // Create the battlefield
         battleSpec = new BattlefieldSpecification(BATTLEFIELD_WIDTH, BATTLEFIELD_HEIGHT);
 
@@ -46,8 +44,8 @@ public class RobotFitness extends FitnessFunction implements IBattleListener {
     @Override
     protected double evaluate(IChromosome iChromosome) {
 
-        int N_ROUNDS = 4;
-        int MAX_POSSIBLE_SCORE = 1000;
+    	rand = new Random(randSeed);
+        int N_ROUNDS = 10;
 
         double score = 0;
         for(int i = 0; i < N_ROUNDS; i++) {
@@ -55,7 +53,6 @@ public class RobotFitness extends FitnessFunction implements IBattleListener {
         }
         score /= N_ROUNDS;
 
-//        return MAX_POSSIBLE_SCORE - score;
         return  score;
     }
 
